@@ -29,63 +29,27 @@ def QueryCourseInfo(course_period, course_subject, course_num):
     course_infos = []
     for main_result in main_results:
         main_row_id = main_result[0]
-        course_info = {
-            'row_id': main_row_id,
-            'subject': main_result[1],
-            'number': main_result[2],
-            'title': main_result[3],
-            'section': main_result[4],
-            'sched_num': main_result[5],
-            'units': main_result[6],
-            'session': main_result[7],
-            'seats_open': main_result[8],
-            'full_title': main_result[9],
-            'description': main_result[10],
-            'prerequisite': main_result[11],
-            'statement': main_result[12],
-        }
+
         footnotes = []
         footnote_ids = select_helper(cursor, "FOOTNOTEROWID", period+"_main_id_to_footnote_id", "MAINROWID", main_row_id)
         for footnote_id in footnote_ids:
             footnote_info = select_helper(cursor, "row_id, *", period+"_footnote", "rowid", footnote_id)
-            footnote = {
-                'row_id': footnote_info[0],
-                'code': footnote_info[1],
-                'details': footnote_info[2],
-            }
-            footnotes.append(footnote)
-        course_info['footnotes'] = footnotes
+            footnotes.append(footnote.Footnote(footnote_info))
 
         meetings = []
         meeting_ids = select_helper(cursor, "MEETINGROWID", period+"_main_id_to_meeting_id", "MAINROWID", main_row_id)
         for meeting_id in meeting_ids:
             meeting_info = select_helper(cursor, "rowid, *", period+"_meeting", "rowid", meeting_id)
-            meeting = {
-                'row_id': meeting_info[0],
-                'type': meeting_info[1],
-                'time_start': meeting_info[2],
-                'time_end': meeting_info[3],
-                'day': meeting_info[4],
-                'location': meeting_info[5],
-            }
             instructors = []
             instructor_ids = select_helper(cursor, "INSTRUCTORROWID", period+"_meeting_id_to_instructor_id", "MEETINGROWID", meeting_id)
             for instructor_id in instructor_ids:
                 instructor_info = select_helper(cursor, "rowid, *", period+"_instructor", "rowid", instructor_id)
-                instructor = {
-                    'row_id': instructor_info[0],
-                    'first_name': instructor_info[1],
-                    'last_name': instructor_info[2],
-                    'department': instructor_info[3],
-                    'overall': instructor_info[4],
-                    'take_again': instructor_info[5],
-                    'difficulty': instructor_info[6],
-                }
-                instructors.append(instructor)
-            meeting['instructors'] = instructors
-        course_info['meetings'] = meetings
+                instructors.append(instructor.Instructor(instructor_info))
+            meetings.append(meeting.Meeting(meeting_info, instructors))
 
-        course_infos.append(course_info)
+        course_infos.append(
+            course_info.CourseInfo(main_result, meetings, footnotes)
+        )
 
     # Commit all changes to database
     conn.commit()

@@ -4,7 +4,6 @@ class CourseInfo:
                  statement, meetings, footnotes):
         self.rowid = rowid
         self.subject = subject
-        self.subject = subject
         self.number = number
         self.title = title
         self.section = section

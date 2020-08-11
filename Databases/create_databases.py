@@ -67,7 +67,7 @@ def create_instructor(period):
 def create_footnote(period):
     return f"""
         CREATE TABLE IF NOT EXISTS {period}_footnote(
-            CODE TEXT,
+            CODE TEXT UNIQUE,
             DETAILS TEXT
         )"""
 
