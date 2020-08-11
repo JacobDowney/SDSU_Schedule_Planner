@@ -1,15 +1,24 @@
 import requests
 from bs4 import BeautifulSoup
 
+### BASICALLY ALL UPDATED EXCEPT NEED TO LOOK AT NEW RATE MY PROFESSOR WEBSITE
+
 FINAL_QUERY_OPTION = "HEADER"
 FINAL_SCHOOL_NAME = "San+Diego+State+University"
 FINAL_SCHOOL_ID = "877"
 
 FINAL_RATE_MY_PROFESSOR_URL = "http://www.ratemyprofessors.com/ShowRatings.jsp?tid="
 
-# TOP LEVEL METHOD
-# ----------------
-#
+
+# TODO: maybe get department also to check that
+"""
+Given a first letter and last name, this finds all the professor informations
+for that given name and returns them as a list
+:param first_letter: A single character string of the first letter of the name
+:param last_name: A string representing the last name of the professor
+:return: A list of professor infos
+:rtype: A list of list of main_ids
+"""
 def get_all_professors_info(first_letter, last_name):
     ids = get_professor_ids(first_letter, last_name)
     professor_infos = []
@@ -18,25 +27,30 @@ def get_all_professors_info(first_letter, last_name):
         if professor_info != None:
             professor_infos.append(professor_info)
     if len(professor_infos) == 0:
-        print "RATEMYPROF ERROR: NO PROFESSOR INFO FOR: " + first_letter + " " + last_name
+        print("RATEMYPROF ERROR: NO PROFESSOR INFO FOR: " + first_letter + " " + last_name)
     return professor_infos
+
 
 # Returns a list of professor id's for a given professor name.
 # ------------------------------------------------------------
-# Example: For professor name: P, Kraft there would first be 3 professors:
+# Example: For professor name: (P, Kraft) there would first be 3 professors:
 # Brenna Kraft, Heidi Kraft, and Patty Kraft. Given that only Patty Kraft has a
 # first name that starts with P, the list being returned would be:
 # [96810]
 def get_professor_ids(first_letter, last_name):
     url = get_prof_id_url(query_by = "teacherName", query = last_name)
     soup = BeautifulSoup(requests.get(url).content, "html.parser")
+
     infos = soup.find_all("li", {"class": "listing PROFESSOR"})
     names = soup.find_all("span", {"class": "main"})
+
     ids = []
     if len(names) != len(infos):
-        print "RATEMYPROF ERROR: NOT EQUAL LENGTH OF INFOS AND NAMES"
+        print("RATEMYPROF ERROR: NOT EQUAL LENGTH OF INFOS AND NAMES")
     for (info, name) in zip(infos, names):
         if (first_letter == name.text.split(",")[1].strip()[0]):
+            # TODO: use regexp here instead of [61:70] to parse
+            # /ShowRatings.jsp?tid=1262033
             ids.append(str(info)[61:70].split('"')[0])
     return ids
 
@@ -51,14 +65,19 @@ def get_prof_id_url(query_option = FINAL_QUERY_OPTION, query_by = "",
             + school_name + '&schoolID=' + school_id + '&query=' + query)
     return url
 
+
 # Given a professor id, returns a diection of professor info containing a
 # professor's: {first_name, last_name, department, overall_quality,
 # would_take_again, level_of_difficulty}
 # TODO: make department into a regex expression
 def get_professor_info(id):
-    url = FINAL_RATE_MY_PROFESSOR_URL + id
-    if len(scrap_info_from_url(url, "div", "rating-breakdown")) == 0:
-        return None
+    url = FINAL_RATE_MY_PROFESSOR_URL + str(id)
+
+    ### IDK WHAT THIS DOES?
+    ### MAYBE CHECK THAT THE PROF IS THERE
+    # if len(scrap_info_from_url(url, "div", "rating-breakdown")) == 0:
+    #     return None
+
     soup = BeautifulSoup(requests.get(url).content, "html.parser")
     grades = soup.find_all("div", {"class": "grade"})
     first_name = soup.findall("span", {"class": "pfname"})[0].text.strip()
@@ -70,9 +89,10 @@ def get_professor_info(id):
         'department': department.split('department')[0].split('fessor in the')[1].strip(),
         'overall_quality': grades[0].text.strip(),
         'would_take_again': grades[1].text.strip(),
-        'level_of_difficulty': grades[2].text.strip()
+        'level_of_difficulty': grades[2].text.strip(),
+        'url': url
     }
     return professor_info
 
-
+get_professor_info(1262033)
 # holder

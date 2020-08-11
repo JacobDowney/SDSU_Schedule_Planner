@@ -16,9 +16,9 @@ FINAL_SCHED_URL_START = "https://sunspot.sdsu.edu/schedule/"
 #   1.) Key: 'course_infos'                                                    #
 #       Value: A list of course infos for all courses.                         #
 #   2.) Key: 'meeting_dict'                                                    #
-#       Value: A dictionary of five digit numeric numbers -> meetings.         #
+#       Value: A dictionary of (five digit numeric numbers -> meetings)        #
 #   3.) Key: 'footnote_dict'                                                   #
-#       Value: A dictionary of footnote codes -> footnote DETAILS              #
+#       Value: A dictionary of (footnote codes -> footnote DETAILS)            #
 # ---------------------------------------------------------------------------- #
 # ---------------------------------------------------------------------------- #
 def get_sdsu_webportal_course_info(urls):

@@ -8,12 +8,11 @@ def test_get_schedules():
         ['b', 'x'], ['b', 'y'], ['b', 'z'],
         ['c', 'x'], ['c', 'y'], ['c', 'z']]
     schedules = GetListOfSchedules.get_schedules([], [], [abc, xyz])
-    for s in schedules:
-        print s
-    assert schedules == expected
+    print(schedules)
+    assert (schedules == expected), "Not expected output"
 
 if __name__ == '__main__':
     test_get_schedules()
     print("all tests passed")
 else:
-    print "Not Supported"
+    print("Not Supported")
