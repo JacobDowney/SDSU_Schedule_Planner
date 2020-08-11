@@ -1,8 +1,29 @@
 import sqlite3
 
-#cursor.execute("SELECT admin FROM users WHERE username = %(username)s", {'username': username});
-
 #period = "p_20204"  # this is fall 2020
+# Period is not entered by the user so no need to protect against SQL Injections
+def CreateDatabses(period):
+    # Database file
+    db_file = f"./Databases/{period}.db"
+
+    # SQL Create Table Instruction
+    conn = sqlite3.connect(db_file)
+    cursor = conn.cursor()
+
+    # Create all necesary tables
+    cursor.execute(create_main(period))
+    cursor.execute(create_meeting(period))
+    cursor.execute(create_instructor(period))
+    cursor.execute(create_footnote(period))
+    cursor.execute(create_main_id_to_meeting_id(period))
+    cursor.execute(create_main_id_to_footnote_id(period))
+    cursor.execute(create_meeting_id_to_instructor_id(period))
+
+    # Commit all changes to database
+    conn.commit()
+
+    # Close our connection
+    conn.close()
 
 # Could be part of a block of sections
 def create_main(period):
@@ -70,41 +91,3 @@ def create_meeting_id_to_instructor_id(period):
             MEETINGROWID INTEGER,
             INSTRUCTORROWID INTEGER
         )"""
-
-# Runs the command to create the table
-def create_table(connection, create_sql_table_command):
-    cursor = connection.cursor()
-    cursor.execute(create_sql_table_command)
-
-
-# Multiple class per sched num -> comm 101
-def main():
-    period = "p_20204"
-
-    # Database file
-    db_file = f"./Databases/{period}.db"
-
-    # SQL Create Table Instruction
-    conn = sqlite3.connect(db_file)
-    cursor = conn.cursor()
-
-    # Create all necesary tables
-    cursor.execute(create_main(period))
-    cursor.execute(create_meeting(period))
-    cursor.execute(create_instructor(period))
-    cursor.execute(create_footnote(period))
-    cursor.execute(create_main_id_to_meeting_id(period))
-    cursor.execute(create_main_id_to_footnote_id(period))
-    cursor.execute(create_meeting_id_to_instructor_id(period))
-
-    # Commit all changes to database
-    conn.commit()
-
-    # Close our connection
-    conn.close()
-
-
-if __name__ == '__main__':
-    main()
-else:
-    print("Not Supported")

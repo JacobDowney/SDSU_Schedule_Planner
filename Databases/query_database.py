@@ -1,6 +1,6 @@
 import sqlite3
 
-def query_course_info(course_period, course_subject, course_num):
+def QueryCourseInfo(course_period, course_subject, course_num):
     # Database file
     db_file = f"./Databases/{course_period}.db"
 
