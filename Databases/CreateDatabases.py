@@ -8,7 +8,6 @@ import sqlite3
 def create_main(period):
     return f"""
         CREATE TABLE IF NOT EXISTS {period}_main (
-            MAINID INTEGER PRIMARY KEY,
             SUBJECT TEXT,
             NUMBER TEXT,
             TITLE TEXT,
@@ -26,10 +25,9 @@ def create_main(period):
 def create_meeting(period):
     return f"""
         CREATE TABLE IF NOT EXISTS {period}_meeting(
-            MEETINGID INTEGER PRIMARY KEY,
             TYPE TEXT,
-            TIMESTART TIME,
-            TIMEEND TIME,
+            TIMESTART TEXT,
+            TIMEEND TEXT,
             DAY TEXT,
             LOCATION TEXT
         )"""
@@ -37,7 +35,6 @@ def create_meeting(period):
 def create_instructor(period):
     return f"""
         CREATE TABLE IF NOT EXISTS {period}_instructor(
-            INSTRUCTORID INTEGER PRIMARY KEY,
             FIRSTNAME TEXT,
             LASTNAME TEXT,
             DEPARTMENT TEXT,
@@ -49,7 +46,6 @@ def create_instructor(period):
 def create_footnote(period):
     return f"""
         CREATE TABLE IF NOT EXISTS {period}_footnote(
-            FOOTNOTEID INTEGER PRIMARY KEY,
             CODE TEXT,
             DETAILS TEXT
         )"""
@@ -57,22 +53,22 @@ def create_footnote(period):
 def create_main_id_to_meeting_id(period):
     return f"""
         CREATE TABLE IF NOT EXISTS {period}_main_id_to_meeting_id(
-            MAINID INTEGER,
-            MEETINGID INTEGER
+            MAINROWID INTEGER,
+            MEETINGROWID INTEGER
         )"""
 
 def create_main_id_to_footnote_id(period):
     return f"""
         CREATE TABLE IF NOT EXISTS {period}_main_id_to_footnote_id(
-            MAINID INTEGER,
-            FOOTNOTEID INTEGER
+            MAINROWID INTEGER,
+            FOOTNOTEROWID INTEGER
         )"""
 
 def create_meeting_id_to_instructor_id(period):
     return f"""
         CREATE TABLE IF NOT EXISTS {period}_meeting_id_to_instructor_id(
-            MEETINGID INTEGER,
-            INSTRUCTORID INTEGER
+            MEETINGROWID INTEGER,
+            INSTRUCTORROWID INTEGER
         )"""
 
 # Runs the command to create the table
