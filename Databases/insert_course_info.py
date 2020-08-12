@@ -11,8 +11,7 @@ def InsertCourseInfos(course_period, course_infos):
     conn = sqlite3.connect(db_file)
     cursor = conn.cursor()
 
-    # ASSUMING EVERY COURSE_INFO IS UNIQUE
-
+    # Every course info is unique so no need to check
     main_infos = [x[:-2] for x in course_infos]
     cursor.executemany(f"""
         INSERT INTO
@@ -25,11 +24,11 @@ def InsertCourseInfos(course_period, course_infos):
     # For each course info insert it into database
     for course_info in course_infos:
 
-        # Inserting footnotes
+        # Inserting footnotes into footnote and main_to_footnote tables
         footnotes = course_info[-1]
         footnote_ids = []
         for footnote in footnotes:
-            footnote_id = get_id(
+            footnote_id = get_id_or_insert(
                 cursor,
                 f"{course_period}_footnote",
                 f"CODE = '{footnote}'",
@@ -37,20 +36,15 @@ def InsertCourseInfos(course_period, course_infos):
             )
             footnote_ids.append(footnote_id)
         main_to_footnote = [[main_id, x] for x in footnote_ids]
-        cursor.execute(f"""
-            INSERT INTO
-                {course_period}_main_id_to_footnote_id
-            VALUES
-                (?, ?)
-        """, main_to_footnote)
+        insert_main_to_id(
+            cursor, f"{course_period}_main_id_to_footnote_id", main_to_footnote
+        )
 
-        ###
-
-        # Insert meeting
+        # Inserting meetings into meeting and main_to_meeting tables
         meetings = course_info[-2]
         meeting_ids = []
         for meeting in meetings:
-            meeting_id = get_id(
+            meeting_id = get_id_or_insert(
                 cursor,
                 f"{course_period}_meeting",
                 f"""
@@ -67,56 +61,52 @@ def InsertCourseInfos(course_period, course_infos):
                         LOCATION = '{meeting[4]}
                 """,
                 f"""
-                    ('{meeting[0]}', '{meeting[1]}', '{meeting[2]}',
-                     '{meeting[3]}', '{meeting[4]}')
+                    ('{course_info[2]}', '{meeting[0]}', '{meeting[1]}',
+                     '{meeting[2]}', '{meeting[3]}', '{meeting[4]}')
                 """
             )
             meeting_ids.append(meeting_id)
+
+            # Inserting instructors into instructor and meeting_to_instructor
+            # tables
             instructors = meeting[5]
             instructor_ids = []
             for instructor in instructors:
-                instructor_id = get_id(
+                instructor_id = get_id_or_insert(
                     cursor,
-                    a,
-                    b,
-                    c
+                    f"{course_period}_instructor",
+                    f"""
+                            FIRSTNAME = '{instructor[0]}'
+                        AND
+                            LASTNAME = '{instructor[1]}'
+                        AND
+                            DEPARTMENT = '{instructor[2]}'
+                    """,
+                    f"""
+                        ('{instructor[0]}', '{instructor[1]}',
+                         '{instructor[2]}', '{instructor[3]}',
+                         '{instructor[4]}', '{instructor[4]}')
+                    """
                 )
                 instructor_ids.append(instructor_id)
-            meeting_to_instructor = [[main_id, x] for x in instructor_ids]
-            cursor.execute(f"""
-                INSERT INTO
-                    {course_period}_meeting_id_to_instructor_id
-                VALUES
-                    (?, ?)
-            """, main_to_footnote)
+            meeting_to_instructor = [[meeting_id, x] for x in instructor_ids]
+            insert_main_to_id(
+                cursor,
+                f"{course_period}_meeting_id_to_instructor_id",
+                meeting_to_instructor
+            )
 
         main_to_meeting = [[main_id, x] for x in meeting_ids]
-        cursor.execute(f"""
-            INSERT INTO
-                {course_period}_main_id_to_meeting_id
-            VALUES
-                (?, ?)
-        """, main_to_meeting)
-
-
-
-        # We assume that the main has not yet been inserted
-        # Insert main
-
-        # CREATE TABLE bookmarks(
-        #     users_id INTEGER,
-        #     lessoninfo_id INTEGER,
-        #     UNIQUE(users_id, lessoninfo_id)
-        # );
-        #
-        # INSERT OR IGNORE INTO bookmarks(users_id, lessoninfo_id) VALUES(123, 456)
+        insert_main_to_id(
+            cursor, f"{course_period}_main_id_to_meeting_id", main_to_meeting
+        )
 
     # Commit all changes to database
     conn.commit()
     # Close our connection
     conn.close()
 
-def get_id(cursor, table, where, values):
+def get_id_or_insert(cursor, table, where, values):
     cursor.execute(f"""
         SELECT
             rowid
@@ -135,3 +125,11 @@ def get_id(cursor, table, where, values):
             {values}
     """)
     return cursor.lastrowid
+
+def insert_main_to_id(cursor, table, values):
+    cursor.execute(f"""
+        INSERT INTO
+            {table}
+        VALUES
+            (?, ?)
+    """, values)
