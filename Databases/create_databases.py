@@ -46,6 +46,7 @@ def create_main(period):
 def create_meeting(period):
     return f"""
         CREATE TABLE IF NOT EXISTS {period}_meeting(
+            TITLE TEXT,
             TYPE TEXT,
             TIMESTART TEXT,
             TIMEEND TEXT,

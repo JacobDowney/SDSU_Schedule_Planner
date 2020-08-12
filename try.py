@@ -1,9 +1,5 @@
-t = [
-        (2, 5, 7, 9, 10, 11, 12),
-        (3, 6, 8, 10, 11, 12, 13)
-    ]
+name = "jacob"
 
+newStr = f"hello {name} hi"
 
-#t = [x[:-2] for x in t]
-
-print(t[1][-1])
+print(newStr)
